@@ -23,6 +23,7 @@ Once installed, searching documents is as easy as:
 
   class MyModel(models.Model):
      ...
+
      objects = SearchableManager()
 
 
