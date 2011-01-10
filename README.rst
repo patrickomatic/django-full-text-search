@@ -23,6 +23,7 @@ Once installed, searching documents is as easy as:
 
   class MyModel(models.Model):
     ...
+    
     objects = SearchableManager()
 
 
@@ -33,7 +34,7 @@ a single string containing all text to be searched: ::
      name = models.CharField()
      body = models.CharField()
      ...
-     object = SearchableManager()
+     objects = SearchableManager()
  
      def get_text_only(self):
         return ' '.join(self.name, self.body)
