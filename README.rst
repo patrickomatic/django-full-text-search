@@ -41,13 +41,13 @@ a single string containing all text to be searched: ::
 
 
 3. Index the documents when they are created or modified by using the manager
-methods.  This only needs to be done once: ::
+methods.  This only needs to be done once: 
 
-   MyModel.objects.add_to_index(my_model_instance)
+   ``MyModel.objects.add_to_index(my_model_instance)``
 
-4. Now search the indexed documents: ::
+4. Now search the indexed documents:
 
-   MyModel.objects.search('my search terms')
+   ``MyModel.objects.search('my search terms')``
 
 
 Installation
