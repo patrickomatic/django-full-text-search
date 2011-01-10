@@ -34,7 +34,7 @@ a single string containing all text to be searched: ::
      body = models.CharField()
      ...
      object = SearchableManager()
-:: 
+ 
      def get_text_only(self):
         return ' '.join(self.name, self.body)
 
