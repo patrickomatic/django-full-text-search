@@ -22,9 +22,8 @@ Once installed, searching documents is as easy as:
   from ftsearch.managers import SearchableManager
 
   class MyModel(models.Model):
-    ...
-    
-    objects = SearchableManager()
+     ...
+     objects = SearchableManager()
 
 
 2. Define a ``get_text_only()`` method on the model.  This method should return
