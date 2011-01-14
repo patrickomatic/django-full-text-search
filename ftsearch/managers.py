@@ -67,7 +67,7 @@ class SearchableManager(models.Manager):
 							   % (table_number - 1, table_number)
 
 			field_list += ',w%d.location' % table_number
-			table_list += 'search_wordlocation w%d' % table_number
+			table_list += 'ftsearch_wordlocation w%d' % table_number
 			clause_list += 'w%d.word_id=%d' % (table_number, word_id)
 
 			table_number += 1
