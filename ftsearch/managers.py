@@ -19,7 +19,11 @@ class SearchableManager(models.Manager):
 		if self.is_indexed(model):
 			self.remove_from_index(model)
 
-		text = model.get_text_only()
+		try:
+			text = model.get_text_only()
+		except AttributeError:
+			raise NotImplementedError(model + " must implement get_text_only()")
+
 		stemmed_text = [p.stem(s.lower()) for s in settings.SEARCH_WORD_SPLIT_REGEX.split(text) if s != '']
 
 		for i in range(len(stemmed_text)):
