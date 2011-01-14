@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models, connection
 
 from ftsearch.models import Word, WordLocation
@@ -24,7 +25,7 @@ class SearchableManager(models.Manager):
 		except AttributeError:
 			raise NotImplementedError(model + " must implement get_text_only()")
 
-		stemmed_text = [p.stem(s.lower()) for s in settings.SEARCH_WORD_SPLIT_REGEX.split(text) if s != '']
+		stemmed_text = [p.stem(s.lower()) for s in self.__separate_words(text) if s != '']
 
 		for i in range(len(stemmed_text)):
 			word = stemmed_text[i]
@@ -86,14 +87,18 @@ class SearchableManager(models.Manager):
 		return [row for row in rows], word_ids
 
 
+	def __separate_words(self, words):
+		return settings.SEARCH_WORD_SPLIT_REGEX.split(words)
+
+
 	def search(self, query):
 		if isinstance(query, str):
 			# split the string into a list of search terms
-			query = settings.SEARCH_WORD_SPLIT_REGEX.split(query)
-			p = settings.SEARCH_STEMMER
+			query = self.__separate_words(query)
 		elif not isinstance(query, list):
 			raise TypeError("search must be called with a string or a list")
 
+		p = settings.SEARCH_STEMMER()
 		# lowercase and stem each word
 		stemmed_query = [p.stem(s.lower()) for s in query if s != '']
 
@@ -101,7 +106,7 @@ class SearchableManager(models.Manager):
 		rows, word_ids = self.__get_match_rows(stemmed_query)
 
 		# apply the weights to each row
-		weights = [(w, weight_fn(rows)) for w, weight_fn in self.SEARCH_WEIGHTS]
+		weights = [(w, weight_fn(rows)) for w, weight_fn in settings.SEARCH_WEIGHTS]
 
 		# calculate total scores for each documents by applying weights
 		total_scores = dict([(row[0], 0) for row in rows])

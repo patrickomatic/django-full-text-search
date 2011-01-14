@@ -12,6 +12,7 @@ from django.test import TestCase
 from ftsearch.managers import SearchableManager
 from ftsearch.models import Word, WordLocation
 from ftsearch.weights import *
+from ftsearch.stemming import PorterStemmer
 
 
 LOREM_IPSUM = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla a purus a libero pellentesque feugiat. Ut nulla ligula, ornare at lacinia eget, accumsan sit amet nisl. Aliquam erat volutpat. Quisque volutpat varius risus, ut facilisis diam posuere placerat. Duis ipsum lacus, hendrerit a cursus a, dapibus eget turpis. Aliquam iaculis, massa in molestie convallis, mauris odio gravida mi, non tincidunt neque diam non augue. Nulla facilisi. Sed varius mi quis nunc interdum pulvinar. Cras ut elit at tortor viverra aliquet. Proin ultrices luctus ipsum, eu porttitor risus dapibus ac. Nulla facilisi. Sed sem ligula, convallis et tempus in, placerat et velit. Morbi ipsum lectus, rhoncus malesuada rutrum sit amet, lacinia non risus. Pellentesque commodo velit in lorem lacinia tincidunt. Suspendisse hendrerit lorem quis est consequat non congue justo convallis. Donec lobortis, nibh lacinia molestie commodo, mauris nunc accumsan augue, ut malesuada metus risus quis enim. Proin metus lorem, scelerisque at porttitor eget, eleifend vulputate diam.'
@@ -21,6 +22,7 @@ class TestModel(models.Model):
 	name = models.CharField(max_length=50)
 	body = models.TextField()
 	rating = models.PositiveIntegerField()
+	db_table = 'test'
 
 	objects = SearchableManager()
 
@@ -29,6 +31,10 @@ class TestModel(models.Model):
 
 
 class WeightsTest(TestCase):
+	def setUp(self):
+		self.test_doc_id = 1
+		self.rows = [(self.test_doc_id, 3, 7), (self.test_doc_id, 15, 7)]
+
 	def test_normalize_scores(self):
 		ret = normalize_scores({'zero': 0, 'quarter': 25, 'half': 50, 'whole': 100})
 # XXX these have to all be approximate
@@ -123,9 +129,9 @@ class SearchableManagerTest(TestCase):
 
 	def test_add_to_index__get_text_only_not_implemented(self):
 		class Foo:
-			pass
+			id = 4
 
-		self.assertRaises(NotImplementedError, add_to_index, self.manager, Foo())
+		self.assertRaises(NotImplementedError, self.manager.add_to_index, Foo())
 
 
 	def test_remove_from_index(self):
@@ -136,11 +142,6 @@ class SearchableManagerTest(TestCase):
 
 		model = TestModel()
 		# XXX
-
-
-	def test_separate_words(self):
-		self.assert_(self.manager.separate_words('FOO poo moo') == ['foo', 'poo', 'moo'])
-		self.assert_(self.manager.separate_words('12-30 f. 1/34@!02$#*') == ['12', '30', 'f', '1', '34', '02'])
 
 
 	def test_is_indexed(self):
@@ -158,15 +159,6 @@ class SearchableManagerTest(TestCase):
 		model = TestModel()
 		model.id = 2020202
 		self.assert_(not self.manager.is_indexed(model))
-
-
-	def test_get_match_rows(self):
-		rows, word_ids = self.manager.__get_match_rows('test things')
-
-		self.assert_(rows[0] == (self.test_doc_id, 3, 7))
-		self.assert_(rows[1] == (self.test_doc_id, 6, 7))
-		self.assert_(rows[2] == (self.test_doc_id, 15, 7))
-		self.assert_(word_ids == [89, 92])
 
 
 	def test_search(self):
