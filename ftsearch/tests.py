@@ -110,10 +110,9 @@ class SearchableManagerTest(TestCase):
 		self.lorem_ipsum_doc = TestModel(name='Lorem ipsum', body=LOREM_IPSUM * 5)
 		self.lorem_ipsum_doc.id = 1
 		self.test_doc = TestModel(name='This is a test', body='I am testing things by making this document that is a test', rating=3)
-		self.test_doc.id = self.test_doc_id = 2
+		self.test_doc.id = 2
 
 		self.manager = TestModel.objects
-		self.manager.add_to_index(self.test_doc)
 
 
 	def test_add_to_index(self):
@@ -165,17 +164,25 @@ class SearchableManagerTest(TestCase):
 
 
 	def test_search(self):
+		# XXX turn these into fixtures to speed up test execution
+		self.manager.add_to_index(self.test_doc)
+		self.manager.add_to_index(self.lorem_ipsum_doc)
+
 		res = self.manager.search('test things')
-		self.assert_(res == [(7.0, self.test_doc_id)])
+		self.assert_(res == [(3.0, self.test_doc.id)])
 
 		res = self.manager.search('lorem ipsum')
-		self.assert_(res == [(7.0, str(self.lorem_ipsum_doc['_id']))])
+		self.assert_(res == [(3.0, self.lorem_ipsum_doc.id)])
 
 	def test_search__list(self):
+		self.manager.add_to_index(self.test_doc)
+
 		res = self.manager.search(['test', 'things'])
-		self.assert_(res == [(7.0, self.test_doc_id)])
+		self.assert_(res == [(3.0, self.test_doc.id)])
 
 	def test_search__not_found(self):
+		self.manager.add_to_index(self.test_doc)
+
 		res = self.manager.search("aflkjdfsjkldasldfj")
 		self.assert_(res == [])
 
