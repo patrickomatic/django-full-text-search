@@ -147,14 +147,15 @@ class SearchableManagerTest(TestCase):
 
 
 	def test_is_indexed(self):
-		w = Word(word='word')
+		model = TestModel()
+		model.id = 55
+
+		w = Word(word='word', namespace=model.db_table)
 		w.save()
 
 		word = WordLocation(document_id=55, word=w, location=1)
 		word.save()
 
-		model = TestModel()
-		model.id = 55
 		self.assert_(self.manager.is_indexed(model))
 
 	def test_is_indexed__not_indexed(self):
