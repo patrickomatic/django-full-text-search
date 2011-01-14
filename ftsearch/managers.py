@@ -19,7 +19,7 @@ class SearchableManager(models.Manager):
 		try:
 			text = model.get_text_only()
 		except AttributeError:
-			raise NotImplementedError(model + " must implement get_text_only()")
+			raise NotImplementedError(unicode(model) + " must implement get_text_only()")
 
 		p = settings.SEARCH_STEMMER()
 		stemmed_text = [p.stem(s.lower()) for s in self.__separate_words(text) if s != '']
