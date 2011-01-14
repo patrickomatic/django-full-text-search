@@ -27,7 +27,7 @@ class TestModel(models.Model):
 	objects = SearchableManager()
 
 	def get_text_only(self):
-		return ' '.join(self.name, self.body)
+		return ' '.join([self.name, self.body])
 
 
 class WeightsTest(TestCase):
@@ -110,8 +110,10 @@ class SearchableManagerTest(TestCase):
 		self.lorem_ipsum_doc = TestModel(name='Lorem ipsum', body=LOREM_IPSUM * 5)
 		self.lorem_ipsum_doc.id = 1
 		self.test_doc = TestModel(name='This is a test', body='I am testing things by making this document that is a test', rating=3)
-		self.test_doc.id = 2
+		self.test_doc.id = self.test_doc_id = 2
+
 		self.manager = TestModel.objects
+		self.manager.add_to_index(self.test_doc)
 
 
 	def test_add_to_index(self):

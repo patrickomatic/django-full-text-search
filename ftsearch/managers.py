@@ -9,11 +9,7 @@ IGNORE_WORDS = set(['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it'])
 
 class SearchableManager(models.Manager):
 	def is_indexed(self, model):
-		try:
-			WordLocation.objects.filter(document_id=model.id, word__namespace=self.model.db_table)[0]
-			return True
-		except WordLocation.DoesNotExist:
-			return False
+		return WordLocation.objects.filter(document_id=model.id, word__namespace=self.model.db_table).exists()
 
 
 	def add_to_index(self, model):
@@ -25,6 +21,7 @@ class SearchableManager(models.Manager):
 		except AttributeError:
 			raise NotImplementedError(model + " must implement get_text_only()")
 
+		p = settings.SEARCH_STEMMER()
 		stemmed_text = [p.stem(s.lower()) for s in self.__separate_words(text) if s != '']
 
 		for i in range(len(stemmed_text)):
@@ -32,9 +29,9 @@ class SearchableManager(models.Manager):
 			if word in IGNORE_WORDS: continue
 			
 			try:
-				word = Word.objects.get(word=word, namespace=db.model.db_table)
+				word = Word.objects.get(word=word, namespace=self.model.db_table)
 			except Word.DoesNotExist:
-				word = Word(word=word, namespace=db.model.db_table)
+				word = Word(word=word, namespace=self.model.db_table)
 				word.save()
 
 			word_location = WordLocation(document_id=model.id, word=word, location=i)
